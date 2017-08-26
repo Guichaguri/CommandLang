@@ -1,0 +1,5 @@
+rootProject.name = 'CommandLang'
+
+include ':core'
+include ':compiler'
+include ':runtime'
