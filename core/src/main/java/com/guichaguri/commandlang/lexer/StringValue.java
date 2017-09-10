@@ -27,7 +27,15 @@ public class StringValue implements Token, Instruction {
                 if(c == closeChar) {
                     // String closed
                     lexer.next(); // Skip the close char
-                    tokens.add(new StringValue(builder.toString()));
+
+                    if(builder.length() > 0) {
+                        // Adds the additive sign if we have anything before
+                        if(!tokens.isEmpty()) tokens.add(Operator.ADDITIVE);
+
+                        // Finally adds the last bit of string
+                        tokens.add(new StringValue(builder.toString()));
+                    }
+
                     return tokens;
                 } else if(c == '\\') {
                     // Escape
@@ -47,13 +55,26 @@ public class StringValue implements Token, Instruction {
 
                     if(token != null) {
                         if(builder.length() > 0) {
+                            // Adds the additive sign if we have anything before
+                            if(!tokens.isEmpty()) tokens.add(Operator.ADDITIVE);
+
+                            // Adds the last bit of string
                             tokens.add(new StringValue(builder.toString()));
+
+                            // Adds another additive sign
+                            tokens.add(Operator.ADDITIVE);
+
+                            // Resets the builder
                             builder = new StringBuilder();
                         }
+
+                        // Adds the new token
                         tokens.add(token);
                         continue;
                     }
                 }
+            } else {
+                c = parseEscaping(lexer, c);
             }
             escape = false;
 
@@ -61,6 +82,26 @@ public class StringValue implements Token, Instruction {
         }
 
         throw new LexerException("The string never closes");
+    }
+
+    private static char parseEscaping(Lexer lexer, char c) throws IOException {
+        switch(c) {
+            case 't': return '\t'; // Tab
+            case 'b': return '\b'; // Backspace
+            case 'n': return '\n'; // Line Break
+            case 'r': return '\r'; // Carriage Return
+            case 'f': return '\f'; // Formfeed
+            case 'u': // Unicode
+                StringBuilder builder = new StringBuilder();
+
+                for(int i = 0; i < 4 && lexer.next(); i++) {
+                    builder.append(lexer.peek());
+                }
+
+                return (char)Integer.parseInt(builder.toString(), 16);
+        }
+
+        return c; // Rest of the characters (quotes, backslashes, etc)
     }
 
     private final String value;
