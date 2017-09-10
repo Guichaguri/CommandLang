@@ -32,6 +32,9 @@ public class Lexer {
         if(character == '\n') {
             line++;
             pos = 1;
+
+            // Adds the line separator token, something being parsed or not
+            tokens.add(Punctuation.LINE_SEPARATOR);
         } else {
             pos++;
         }

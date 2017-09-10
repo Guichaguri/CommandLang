@@ -15,11 +15,13 @@ public enum Punctuation implements Token {
     BLOCK_CLOSE('}'),
 
     ARGUMENT_SEPARATOR(','),
-    INSTRUCTION_END(';');
+    INSTRUCTION_END(';'),
+
+    LINE_SEPARATOR; // A punctuation that's only used to count lines
 
     public static boolean isPunctuation(char c) {
         for(Punctuation p : values()) {
-            if(p.punctuation == c) return true;
+            if(p.parseable && p.punctuation == c) return true;
         }
         return false;
     }
@@ -28,7 +30,7 @@ public enum Punctuation implements Token {
         lexer.next(); // Skip itself
 
         for(Punctuation p : values()) {
-            if(p.punctuation == c) {
+            if(p.parseable && p.punctuation == c) {
                 return p;
             }
         }
@@ -37,9 +39,16 @@ public enum Punctuation implements Token {
     }
 
     private final char punctuation;
+    private final boolean parseable;
 
     Punctuation(char punctuation) {
         this.punctuation = punctuation;
+        this.parseable = true;
+    }
+
+    Punctuation() {
+        this.punctuation = 0;
+        this.parseable = false;
     }
 
 }
